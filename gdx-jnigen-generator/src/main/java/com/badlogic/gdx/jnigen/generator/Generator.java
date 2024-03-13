@@ -5,8 +5,11 @@ import com.badlogic.gdx.jnigen.generator.parser.StackElementParser;
 import com.badlogic.gdx.jnigen.generator.types.ClosureType;
 import com.badlogic.gdx.jnigen.generator.types.FunctionSignature;
 import com.badlogic.gdx.jnigen.generator.types.FunctionType;
+import com.badlogic.gdx.jnigen.generator.types.MappedType;
 import com.badlogic.gdx.jnigen.generator.types.NamedType;
+import com.badlogic.gdx.jnigen.generator.types.PrimitiveType;
 import com.badlogic.gdx.jnigen.generator.types.TypeDefinition;
+import com.badlogic.gdx.jnigen.generator.types.TypeKind;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.annotation.ByVal;
@@ -34,6 +37,33 @@ public class Generator {
             return path.toFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void registerCXType(CXType type) {
+        String name = clang_getTypeSpelling(type).getString();
+        if (Manager.getInstance().hasCTypeMapping(name)) {
+            return;
+        }
+
+        if (type.kind() == CXType_Typedef) {
+            CXType typeDef = clang_getTypedefDeclUnderlyingType(clang_getTypeDeclaration(type));
+            Manager.getInstance().registerTypeDef(clang_getTypedefName(type).getString(), clang_getTypeSpelling(typeDef).getString());
+            registerCXType(typeDef);
+            return;
+        }
+
+        if (type.kind() == CXType_Pointer) {
+            CXType pointee = clang_getPointeeType(type);
+            registerCXType(pointee);
+            return;
+        }
+
+        TypeKind typeKind = TypeKind.getTypeKind(type);
+        if (typeKind.isSpecial()) {
+            switch (type.kind()) {
+                case
+            }
         }
     }
 
