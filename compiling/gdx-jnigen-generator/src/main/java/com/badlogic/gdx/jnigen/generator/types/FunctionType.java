@@ -12,7 +12,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 
 import java.util.HashMap;
 
-public class FunctionType {
+public class FunctionType implements WritableFunction {
 
     private final FunctionSignature signature;
     private final String comment;
@@ -22,10 +22,12 @@ public class FunctionType {
         this.comment = comment;
     }
 
+    @Override
     public FunctionSignature getSignature() {
         return signature;
     }
 
+    @Override
     public void write(CompilationUnit cu, ClassOrInterfaceDeclaration wrappingClass, HashMap<MethodDeclaration, String> patchNativeMethod) {
         String name = signature.getName();
         TypeDefinition returnType = signature.getReturnType();
