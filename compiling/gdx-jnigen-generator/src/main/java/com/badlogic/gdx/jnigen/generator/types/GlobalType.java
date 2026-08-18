@@ -49,6 +49,7 @@ public class GlobalType implements MappedType {
     }
 
     public void write(CompilationUnit cuPublic, ClassOrInterfaceDeclaration global, CompilationUnit cuInternal, ClassOrInterfaceDeclaration globalInternal, HashMap<MethodDeclaration, String> patchNativeMethods) {
+        cuPublic.addImport(ClassNameConstants.CHANDLER_CLASS);
         cuPublic.addImport(ClassNameConstants.CXXEXCEPTION_CLASS);
         cuPublic.addImport(IllegalArgumentException.class);
         global.addStaticInitializer()
