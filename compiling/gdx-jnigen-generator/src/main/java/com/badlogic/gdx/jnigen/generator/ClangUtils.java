@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import static org.bytedeco.llvm.global.clang.clang_visitChildren;
 
 public class ClangUtils {
-    private static final File NULL_FILE = new File(System.getProperty("os.name").startsWith("Windows") ? "NUL" : "/dev/null");
-
 
     public static void checkVisitorAllocated(CXCursorVisitor visitor) {
         boolean allocated = false;
@@ -44,34 +42,6 @@ public class ClangUtils {
         }) {
             checkVisitorAllocated(visitor);
             return clang_visitChildren(cursor, visitor, null);
-        }
-    }
-
-    public static String[] getIncludePaths() {
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder("clang", "-E", "-x", "c", "-", "-v");
-            processBuilder.redirectInput(NULL_FILE);
-            processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
-            process.waitFor();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            ArrayList<String> includePaths = new ArrayList<>();
-            boolean insideIncludePath = false;
-            while ((line = reader.readLine()) != null) {
-                if (line.equals("End of search list."))
-                    insideIncludePath = false;
-                if (insideIncludePath) {
-                    includePaths.add("-isystem");
-                    includePaths.add(line.trim());
-                }
-                if (line.equals("#include <...> search starts here:"))
-                    insideIncludePath = true;
-            }
-
-            return includePaths.toArray(new String[0]);
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 }

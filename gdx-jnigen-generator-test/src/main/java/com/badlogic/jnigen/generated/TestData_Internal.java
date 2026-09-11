@@ -42,7 +42,7 @@ public final class TestData_Internal {
 
         public interface someClosure_Internal extends Closure {
 
-            CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(5), FFITypes.getCTypeInfo(-1), FFITypes.getCTypeInfo(3) };
+            CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(8), FFITypes.getCTypeInfo(-1), FFITypes.getCTypeInfo(6) };
 
             int someClosure_call(SIntPointer t, double p);
 
@@ -67,7 +67,7 @@ public final class TestData_Internal {
 
         public interface anotherClosure_Internal extends Closure {
 
-            CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(4), FFITypes.getCTypeInfo(5), FFITypes.getCTypeInfo(3) };
+            CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(7), FFITypes.getCTypeInfo(8), FFITypes.getCTypeInfo(6) };
 
             float anotherClosure_call(int t, double p);
 
@@ -95,6 +95,9 @@ public final class TestData_Internal {
     }
 
     public final static class AnonymousStructNoField_Internal {
+    }
+
+    public final static class WordStruct_Internal {
     }
 
     public final static class AnonymousStructNoFieldNested_Internal {
@@ -176,7 +179,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackDoubleReturn_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(3) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(6) };
 
         double methodWithCallbackDoubleReturn_call();
 
@@ -226,7 +229,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackIntArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(5) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(8) };
 
         void methodWithCallbackIntArg_call(int arg0);
 
@@ -276,7 +279,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackShortReturn_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(7) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(13) };
 
         short methodWithCallbackShortReturn_call();
 
@@ -326,7 +329,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackTestStructArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(26) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(34) };
 
         void methodWithCallbackTestStructArg_call(TestStruct arg0);
 
@@ -376,7 +379,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackLongArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(12) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(19) };
 
         void methodWithCallbackLongArg_call(long test);
 
@@ -401,7 +404,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackFloatArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(4) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(7) };
 
         void methodWithCallbackFloatArg_call(float arg0);
 
@@ -426,7 +429,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackDoubleArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(3) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(6) };
 
         void methodWithCallbackDoubleArg_call(double arg0);
 
@@ -451,7 +454,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackIntPointerArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(5), FFITypes.getCTypeInfo(-1) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(8), FFITypes.getCTypeInfo(-1) };
 
         int methodWithCallbackIntPointerArg_call(SIntPointer arg0);
 
@@ -476,7 +479,7 @@ public final class TestData_Internal {
 
     public interface public_callback_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(5) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(8) };
 
         void public_callback_call(int value);
 
@@ -501,7 +504,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackTestEnumArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(15) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(23) };
 
         void methodWithCallbackTestEnumArg_call(TestEnum arg0);
 
@@ -626,7 +629,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackCharReturn_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(10) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(17) };
 
         char methodWithCallbackCharReturn_call();
 
@@ -651,7 +654,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackTestEnumReturn_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(15) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(23) };
 
         TestEnum methodWithCallbackTestEnumReturn_call();
 
@@ -676,7 +679,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackAllArgs_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(12), FFITypes.getCTypeInfo(5), FFITypes.getCTypeInfo(7), FFITypes.getCTypeInfo(1), FFITypes.getCTypeInfo(10), FFITypes.getCTypeInfo(0), FFITypes.getCTypeInfo(4), FFITypes.getCTypeInfo(3) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(19), FFITypes.getCTypeInfo(8), FFITypes.getCTypeInfo(13), FFITypes.getCTypeInfo(1), FFITypes.getCTypeInfo(17), FFITypes.getCTypeInfo(0), FFITypes.getCTypeInfo(7), FFITypes.getCTypeInfo(6) };
 
         void methodWithCallbackAllArgs_call(long arg0, int arg1, short arg2, byte arg3, char arg4, boolean arg5, float arg6, double arg7);
 
@@ -776,7 +779,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackShortArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(7) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(13) };
 
         void methodWithCallbackShortArg_call(short arg0);
 
@@ -851,7 +854,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackIntReturn_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(5) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(8) };
 
         int methodWithCallbackIntReturn_call();
 
@@ -876,7 +879,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackLongReturn_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(12) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(19) };
 
         long methodWithCallbackLongReturn_call();
 
@@ -901,7 +904,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackCharArg_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(10) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(-2), FFITypes.getCTypeInfo(17) };
 
         void methodWithCallbackCharArg_call(char arg0);
 
@@ -976,7 +979,7 @@ public final class TestData_Internal {
 
     public interface methodWithCallbackTestStructReturn_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(26) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(34) };
 
         TestStruct methodWithCallbackTestStructReturn_call();
 
@@ -1001,9 +1004,34 @@ public final class TestData_Internal {
         }
     }
 
+    public interface methodWithCallbackSizeT_Internal extends Closure {
+
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(15), FFITypes.getCTypeInfo(15), FFITypes.getCTypeInfo(16) };
+
+        long methodWithCallbackSizeT_call(long in, long neg);
+
+        default CTypeInfo[] functionSignature() {
+            return __ffi_cache;
+        }
+
+        default void invoke(BufferPtr buf) {
+            buf.setNativeUWord(0, methodWithCallbackSizeT_call(buf.getNativeUWord(0), buf.getNativeWord(CHandler.IS_64_BIT ? 8 : 4)));
+        }
+
+        default void invokePooled(BufferPtr buf, PointingPoolManager manager) {
+            buf.setNativeUWord(0, methodWithCallbackSizeT_call(buf.getNativeUWord(0), buf.getNativeWord(CHandler.IS_64_BIT ? 8 : 4)));
+        }
+
+        public static CClosureObject<TestData.methodWithCallbackSizeT> methodWithCallbackSizeT_downcall(long fnPtr) {
+            return new CClosureObject<>((in, neg) -> {
+                return TestData.methodWithCallbackSizeT_direct(fnPtr, in, neg);
+            }, fnPtr);
+        }
+    }
+
     public interface methodWithCallbackFloatReturn_Internal extends Closure {
 
-        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(4) };
+        CTypeInfo[] __ffi_cache = new CTypeInfo[] { FFITypes.getCTypeInfo(7) };
 
         float methodWithCallbackFloatReturn_call();
 

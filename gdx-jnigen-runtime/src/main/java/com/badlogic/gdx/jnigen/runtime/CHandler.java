@@ -37,7 +37,7 @@ public class CHandler {
         IS_64_BIT = !is32Bit();
         IS_COMPILED_UNIX = !isCompiledWin();
         IS_COMPILED_WIN = isCompiledWin();
-        IS_COMPILED_ANDROID_X86 = isCompiledAndroidX86();
+        IS_COMPILED_UNIX_X86_32 = isCompiledUnixI386();
         IS_CHAR_SIGNED = isCharSigned();
         LONG_SIZE = is32Bit() || isCompiledWin() ? 4 : 8;
         testNativeSetup();
@@ -52,7 +52,7 @@ public class CHandler {
     public static final boolean IS_64_BIT;
     public static final boolean IS_COMPILED_UNIX;
     public static final boolean IS_COMPILED_WIN;
-    public static final boolean IS_COMPILED_ANDROID_X86;
+    public static final boolean IS_COMPILED_UNIX_X86_32;
     public static final boolean IS_CHAR_SIGNED;
     public static final int LONG_SIZE;
 
@@ -149,7 +149,7 @@ public class CHandler {
 
     private static native boolean is32Bit();
     private static native boolean isCompiledWin();
-    private static native boolean isCompiledAndroidX86();
+    private static native boolean isCompiledUnixI386();
     private static native boolean isCharSigned();
 
     private static native boolean init(Method dispatchCallbackReflectedMethod, Method getExceptionStringReflectedMethod);

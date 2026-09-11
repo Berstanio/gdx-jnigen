@@ -1,5 +1,8 @@
 package com.badlogic.gdx.jnigen.generator.types;
 
+import com.badlogic.gdx.jnigen.generator.Manager;
+import com.badlogic.gdx.jnigen.generator.ParseTarget;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,9 +17,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class ByValueClosureSafetyTest {
 
+    @BeforeEach
+    void freshManager() {
+        Manager.init(ParseTarget.LINUX_X86_64, "test.h", "test");
+    }
+
     /** A struct/union field is inspected via its definition's mapped type, so keep the definition around. */
     private static TypeDefinition structDef(String name, boolean systemHeader) {
-        TypeDefinition def = TypeDefinition.get(TypeKind.STRUCT, name);
+        TypeDefinition def = Manager.getInstance().defineType(TypeKind.STRUCT, name, -1, -1);
         StackElementType type = new StackElementType(def, name, null);
         def.setOverrideMappedType(type);
         if (systemHeader)
@@ -25,7 +33,7 @@ public class ByValueClosureSafetyTest {
     }
 
     private static TypeDefinition unionDef(String name) {
-        TypeDefinition def = TypeDefinition.get(TypeKind.UNION, name);
+        TypeDefinition def = Manager.getInstance().defineType(TypeKind.UNION, name, -1, -1);
         StackElementType type = new StackElementType(def, name, null);
         def.setOverrideMappedType(type);
         return def;

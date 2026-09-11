@@ -867,3 +867,85 @@ methodWithCallback getNoopVoidCallback(void) {
 methodWithCallbackIntArg getNoopIntArgCallback(void) {
     return noopIntArgCallback;
 }
+
+size_t passSizeT(size_t v) {
+    return v + 1;
+}
+
+size_t maxSizeT(void) {
+    return SIZE_MAX;
+}
+
+ssize_t negateSSizeT(ssize_t v) {
+    return -v;
+}
+
+intptr_t passIntPtrT(intptr_t v) {
+    return v;
+}
+
+uintptr_t passUIntPtrT(uintptr_t v) {
+    return v;
+}
+
+ptrdiff_t passPtrDiffT(ptrdiff_t v) {
+    return v;
+}
+
+my_size_t passMySizeT(my_size_t v) {
+    return v;
+}
+
+size_t sumSizeTArray(const size_t* values, size_t count) {
+    size_t sum = 0;
+    for (size_t i = 0; i < count; i++)
+        sum += values[i];
+    return sum;
+}
+
+void fillSizeTArray(size_t* out, size_t count) {
+    for (size_t i = 0; i < count; i++)
+        out[i] = i * 3;
+}
+
+ssize_t sumSSizeTArray(ssize_t* values, size_t count) {
+    ssize_t sum = 0;
+    for (size_t i = 0; i < count; i++)
+        sum += values[i];
+    return sum;
+}
+
+size_t wordStructSize(void) {
+    return sizeof(WordStruct);
+}
+
+void fillWordStruct(WordStruct* s) {
+    s->tag = 7;
+    s->count = 42;
+    s->delta = -5;
+    s->address = (intptr_t)s;
+    s->aliased = 99;
+}
+
+size_t readWordStructCount(WordStruct* s) {
+    return s->count;
+}
+
+ssize_t readWordStructDelta(WordStruct* s) {
+    return s->delta;
+}
+
+size_t call_methodWithCallbackSizeT(methodWithCallbackSizeT fnPtr, size_t in, ssize_t neg) {
+    return fnPtr(in, neg);
+}
+
+conditional_word_t passConditionalWord(conditional_word_t v) {
+    return v;
+}
+
+conditional_word_t sumConditionalWords(const conditional_word_t* values, size_t count) {
+    conditional_word_t sum = 0;
+    for (size_t i = 0; i < count; i++)
+        sum += values[i];
+    return sum;
+}

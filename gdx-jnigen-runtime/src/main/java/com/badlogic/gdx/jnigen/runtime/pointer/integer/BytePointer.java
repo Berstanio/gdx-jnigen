@@ -71,10 +71,8 @@ public class BytePointer extends VoidPointer {
     }
 
     public void setByte(byte value, int index) {
-        if (IS_CHAR_SIGNED)
-            setByte((char) value, index);
-        else
-            setByte((char)(value & 0xFF), index);
+        // Every java byte is a valid C char bit pattern, whatever the platform's char signedness.
+        getBufPtr().setByte(index * BYTE_SIZE, value);
     }
 
     public void setByte(char value) {
@@ -82,7 +80,7 @@ public class BytePointer extends VoidPointer {
     }
 
     public void setByte(char value, int index) {
-        if (Utils.checkBoundsForNumber(value, BYTE_SIZE, IS_CHAR_SIGNED))
+        if (!Utils.checkBoundsForNumber(value, BYTE_SIZE, IS_CHAR_SIGNED))
             throw new IllegalArgumentException("Byte out of range: " + value);
         getBufPtr().setByte(index, (byte) value);
     }

@@ -34,6 +34,8 @@ public class PrimitiveType implements MappedType {
             case LONG_LONG:
             case PROMOTED_LONG_LONG:
             case LONG:
+            case WORD:
+            case PROMOTED_WORD:
                 return long.class;
             case FLOAT:
                 return float.class;
@@ -121,6 +123,12 @@ public class PrimitiveType implements MappedType {
         case PROMOTED_LONG:
             methodName = "setNativeULong";
             break;
+        case WORD:
+            methodName = "setNativeWord";
+            break;
+        case PROMOTED_WORD:
+            methodName = "setNativeUWord";
+            break;
         case LONG_LONG:
         case PROMOTED_LONG_LONG:
             methodName = "setLong";
@@ -170,6 +178,12 @@ public class PrimitiveType implements MappedType {
         case PROMOTED_LONG:
             methodName = "getNativeULong";
             break;
+        case WORD:
+            methodName = "getNativeWord";
+            break;
+        case PROMOTED_WORD:
+            methodName = "getNativeUWord";
+            break;
         case LONG_LONG:
         case PROMOTED_LONG_LONG:
             methodName = "getLong";
@@ -188,32 +202,11 @@ public class PrimitiveType implements MappedType {
 
     @Override
     public int getSize(PossibleTarget target) {
-        if (isPointerWidth())
-            return target.is32Bit() ? 4 : 8;
         return definition.getTypeKind().getSize(target);
     }
 
     @Override
     public int getAlignment(PossibleTarget target) {
-        if (isPointerWidth())
-            return target.is32Bit() ? 4 : 8;
         return definition.getTypeKind().getAlignment(target);
-    }
-
-
-    private boolean isPointerWidth() {
-        String name = definition.getTypeName();
-        if (name.startsWith("const "))
-            name = name.substring("const ".length());
-        switch (name) {
-        case "size_t":
-        case "ssize_t":
-        case "ptrdiff_t":
-        case "intptr_t":
-        case "uintptr_t":
-            return true;
-        default:
-            return false;
-        }
     }
 }

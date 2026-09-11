@@ -5,35 +5,35 @@ import com.badlogic.gdx.jnigen.runtime.pointer.VoidPointer;
 import com.badlogic.gdx.jnigen.runtime.util.Utils;
 
 /**
- * This represents an `unsigned long` pointer.
+ * This represents a pointer to an unsigned pointer-wide integer: `size_t`, `uintptr_t` and typedefs of them.
+ * Elements are 4 bytes on 32bit platforms and 8 bytes on 64bit platforms.
  * Java cannot represent unsigned longs natively, the closest is a signed long.
- * Also, on 32bit platforms and windows, is a long only 32bit's. Caution is needed.
  */
-public class ULongPointer extends VoidPointer {
+public class UWordPointer extends VoidPointer {
 
-    private static final int BYTE_SIZE = CHandler.LONG_SIZE;
+    private static final int BYTE_SIZE = CHandler.POINTER_SIZE;
 
-    public ULongPointer(VoidPointer pointer) {
+    public UWordPointer(VoidPointer pointer) {
         super(pointer);
     }
 
-    public ULongPointer(int count, boolean freeOnGC) {
+    public UWordPointer(int count, boolean freeOnGC) {
         super(count * BYTE_SIZE, freeOnGC);
     }
 
-    public ULongPointer() {
+    public UWordPointer() {
         this(1);
     }
 
-    public ULongPointer(int count) {
+    public UWordPointer(int count) {
         super(count * BYTE_SIZE);
     }
 
-    public ULongPointer(long pointer, boolean freeOnGC) {
+    public UWordPointer(long pointer, boolean freeOnGC) {
         super(pointer, freeOnGC);
     }
 
-    public ULongPointer(long pointer, boolean freeOnGC, int capacity) {
+    public UWordPointer(long pointer, boolean freeOnGC, int capacity) {
         super(pointer, freeOnGC, capacity * BYTE_SIZE);
     }
 
@@ -42,7 +42,7 @@ public class ULongPointer extends VoidPointer {
     }
 
     public long getLong(int index) {
-        return getBufPtr().getNativeULong(index * BYTE_SIZE);
+        return getBufPtr().getNativeUWord(index * BYTE_SIZE);
     }
 
     public void setLong(long value) {
@@ -51,7 +51,7 @@ public class ULongPointer extends VoidPointer {
 
     public void setLong(long value, int index) {
         if (!Utils.checkBoundsForNumber(value, BYTE_SIZE, false))
-            throw new IllegalArgumentException("ULong out of range: " + value);
-        getBufPtr().setNativeULong(index * BYTE_SIZE, value);
+            throw new IllegalArgumentException("UWord out of range: " + value);
+        getBufPtr().setNativeUWord(index * BYTE_SIZE, value);
     }
 }

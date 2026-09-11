@@ -30,6 +30,9 @@ import com.badlogic.gdx.jnigen.runtime.pointer.integer.SIntPointer;
 import com.badlogic.gdx.jnigen.runtime.pointer.FloatPointer;
 import com.badlogic.jnigen.generated.structs.SpecialStruct;
 import com.badlogic.jnigen.generated.structs.TestUnion;
+import com.badlogic.gdx.jnigen.runtime.pointer.integer.UWordPointer;
+import com.badlogic.gdx.jnigen.runtime.pointer.integer.SWordPointer;
+import com.badlogic.jnigen.generated.structs.WordStruct;
 import com.badlogic.gdx.jnigen.runtime.closure.Closure;
 
 public final class TestData {
@@ -1829,6 +1832,213 @@ static jclass cxxExceptionClass = NULL;
     	return 0;
     */
 
+    public static long passConditionalWord(long v) {
+        return passConditionalWord_internal(v);
+    }
+
+    public static native long passConditionalWord_internal(long v);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, conditional_word_t, v, 0, return 0);
+    	return (jlong)passConditionalWord((conditional_word_t)v);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long sumConditionalWords(UWordPointer values, long count) {
+        return sumConditionalWords_internal(values.getPointer(), count);
+    }
+
+    public static native long sumConditionalWords_internal(long values, long count);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, size_t, count, 1, return 0);
+    	return (jlong)sumConditionalWords((const conditional_word_t *)values, (size_t)count);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long passSizeT(long v) {
+        return passSizeT_internal(v);
+    }
+
+    public static native long passSizeT_internal(long v);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, size_t, v, 0, return 0);
+    	return (jlong)passSizeT((size_t)v);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long maxSizeT() {
+        return maxSizeT_internal();
+    }
+
+    public static native long maxSizeT_internal();/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	return (jlong)maxSizeT();
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long negateSSizeT(long v) {
+        return negateSSizeT_internal(v);
+    }
+
+    public static native long negateSSizeT_internal(long v);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, ssize_t, v, 0, return 0);
+    	return (jlong)negateSSizeT((ssize_t)v);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long passIntPtrT(long v) {
+        return passIntPtrT_internal(v);
+    }
+
+    public static native long passIntPtrT_internal(long v);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, intptr_t, v, 0, return 0);
+    	return (jlong)passIntPtrT((intptr_t)v);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long passUIntPtrT(long v) {
+        return passUIntPtrT_internal(v);
+    }
+
+    public static native long passUIntPtrT_internal(long v);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, uintptr_t, v, 0, return 0);
+    	return (jlong)passUIntPtrT((uintptr_t)v);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long passPtrDiffT(long v) {
+        return passPtrDiffT_internal(v);
+    }
+
+    public static native long passPtrDiffT_internal(long v);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, ptrdiff_t, v, 0, return 0);
+    	return (jlong)passPtrDiffT((ptrdiff_t)v);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long passMySizeT(long v) {
+        return passMySizeT_internal(v);
+    }
+
+    public static native long passMySizeT_internal(long v);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, my_size_t, v, 0, return 0);
+    	return (jlong)passMySizeT((my_size_t)v);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long sumSizeTArray(UWordPointer values, long count) {
+        return sumSizeTArray_internal(values.getPointer(), count);
+    }
+
+    public static native long sumSizeTArray_internal(long values, long count);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, size_t, count, 1, return 0);
+    	return (jlong)sumSizeTArray((const size_t *)values, (size_t)count);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static void fillSizeTArray(UWordPointer out, long count) {
+        fillSizeTArray_internal(out.getPointer(), count);
+    }
+
+    public static native void fillSizeTArray_internal(long out, long count);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, size_t, count, 1, return);
+    	fillSizeTArray((size_t *)out, (size_t)count);
+    	HANDLE_JAVA_EXCEPTION_END()
+    */
+
+    public static long sumSSizeTArray(SWordPointer values, long count) {
+        return sumSSizeTArray_internal(values.getPointer(), count);
+    }
+
+    public static native long sumSSizeTArray_internal(long values, long count);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, size_t, count, 1, return 0);
+    	return (jlong)sumSSizeTArray((ssize_t *)values, (size_t)count);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long wordStructSize() {
+        return wordStructSize_internal();
+    }
+
+    public static native long wordStructSize_internal();/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	return (jlong)wordStructSize();
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static void fillWordStruct(WordStruct.WordStructPointer s) {
+        fillWordStruct_internal(s.getPointer());
+    }
+
+    public static native void fillWordStruct_internal(long s);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	fillWordStruct((WordStruct *)s);
+    	HANDLE_JAVA_EXCEPTION_END()
+    */
+
+    public static long readWordStructCount(WordStruct.WordStructPointer s) {
+        return readWordStructCount_internal(s.getPointer());
+    }
+
+    public static native long readWordStructCount_internal(long s);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	return (jlong)readWordStructCount((WordStruct *)s);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long readWordStructDelta(WordStruct.WordStructPointer s) {
+        return readWordStructDelta_internal(s.getPointer());
+    }
+
+    public static native long readWordStructDelta_internal(long s);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	return (jlong)readWordStructDelta((WordStruct *)s);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static native long methodWithCallbackSizeT_direct(long fnPtr, long in, long neg);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, ssize_t, neg, 1, return 0);
+    	CHECK_AND_THROW_C_TYPE(env, size_t, in, 0, return 0);
+    	return (jlong)((size_t(*)(size_t, ssize_t))fnPtr)((size_t)in, (ssize_t)neg);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
+    public static long call_methodWithCallbackSizeT(ClosureObject<TestData.methodWithCallbackSizeT> fnPtr, long in, long neg) {
+        return call_methodWithCallbackSizeT_internal(fnPtr.getPointer(), in, neg);
+    }
+
+    public static native long call_methodWithCallbackSizeT_internal(long fnPtr, long in, long neg);/*
+    	HANDLE_JAVA_EXCEPTION_START()
+    	CHECK_AND_THROW_C_TYPE(env, ssize_t, neg, 2, return 0);
+    	CHECK_AND_THROW_C_TYPE(env, size_t, in, 1, return 0);
+    	return (jlong)call_methodWithCallbackSizeT((methodWithCallbackSizeT)fnPtr, (size_t)in, (ssize_t)neg);
+    	HANDLE_JAVA_EXCEPTION_END()
+    	return 0;
+    */
+
     public interface methodWithCallbackBooleanArg extends Closure, TestData_Internal.methodWithCallbackBooleanArg_Internal {
 
         void methodWithCallbackBooleanArg_call(boolean arg0);
@@ -2005,6 +2215,11 @@ static jclass cxxExceptionClass = NULL;
     public interface methodWithCallbackTestStructReturn extends Closure, TestData_Internal.methodWithCallbackTestStructReturn_Internal {
 
         TestStruct methodWithCallbackTestStructReturn_call();
+    }
+
+    public interface methodWithCallbackSizeT extends Closure, TestData_Internal.methodWithCallbackSizeT_Internal {
+
+        long methodWithCallbackSizeT_call(long in, long neg);
     }
 
     public interface methodWithCallbackFloatReturn extends Closure, TestData_Internal.methodWithCallbackFloatReturn_Internal {

@@ -1,6 +1,6 @@
 package com.badlogic.gdx.jnigen.generator.types;
 
-import com.badlogic.gdx.jnigen.generator.Manager;
+import com.badlogic.gdx.jnigen.generator.PossibleTarget;
 
 public class TypeDefinition {
 
@@ -11,30 +11,19 @@ public class TypeDefinition {
     private int count = 1;
     private boolean anonymous;
     private MappedType mappedType;
+    private final PossibleTarget target;
+    private final long observedSize;
+    private final long observedAlignment;
 
 
-    private TypeDefinition(TypeKind typeKind, String typeName) {
+    public TypeDefinition(TypeKind typeKind, String typeName, PossibleTarget target, long observedSize, long observedAlignment) {
         this.typeKind = typeKind;
         this.typeName = typeName;
+        this.target = target;
+        this.observedSize = observedSize;
+        this.observedAlignment = observedAlignment;
         if (typeName.startsWith("const "))
             constMarked = true;
-    }
-
-    public static TypeDefinition get(TypeKind typeKind, String typeName) {
-        if (typeKind.isPrimitive()) {
-            if (!Manager.getInstance().hasCType(typeName)) {
-                TypeDefinition definition = new TypeDefinition(typeKind, typeName);
-                Manager.getInstance().recordCType(typeName, definition);
-                return definition;
-            }
-
-            TypeDefinition definition = Manager.getInstance().getCType(typeName);
-            if (definition.getTypeKind() != typeKind)
-                throw new IllegalArgumentException("Type " + typeName + " has kind " + definition.getTypeKind() + ", but requested was " + typeKind);
-            return definition;
-        }
-
-        return new TypeDefinition(typeKind, typeName);
     }
 
     public TypeKind getTypeKind() {
@@ -43,6 +32,27 @@ public class TypeDefinition {
 
     public void setTypeKind(TypeKind typeKind) {
         this.typeKind = typeKind;
+    }
+
+    public PossibleTarget getTarget() {
+        return target;
+    }
+
+    public long getObservedSize() {
+        return observedSize;
+    }
+
+    public long getObservedAlignment() {
+        return observedAlignment;
+    }
+
+    boolean matchesLayoutOf(TypeKind kind) {
+        return kind.getSize(target) == observedSize && kind.getAlignment(target) == observedAlignment;
+    }
+
+    @Override
+    public String toString() {
+        return target + "=" + typeKind + "(" + observedSize + " bytes, align " + observedAlignment + ")";
     }
 
     public void setOverrideMappedType(MappedType mappedType) {

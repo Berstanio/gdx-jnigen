@@ -68,6 +68,10 @@ public class PointerType implements MappedType {
             return "SLongPointer";
         case PROMOTED_LONG:
             return "ULongPointer";
+        case WORD:
+            return "SWordPointer";
+        case PROMOTED_WORD:
+            return "UWordPointer";
         case LONG_LONG:
             return "SInt64Pointer";
         case PROMOTED_LONG_LONG:

@@ -13,6 +13,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.WildcardType;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -46,6 +47,10 @@ public class GlobalType implements MappedType {
 
     public List<NativeFunction> getFunctions() {
         return functions;
+    }
+
+    public Collection<ClosureType> getClosures() {
+        return closures.values();
     }
 
     public void write(CompilationUnit cuPublic, ClassOrInterfaceDeclaration global, CompilationUnit cuInternal, ClassOrInterfaceDeclaration globalInternal, HashMap<MethodDeclaration, String> patchNativeMethods) {

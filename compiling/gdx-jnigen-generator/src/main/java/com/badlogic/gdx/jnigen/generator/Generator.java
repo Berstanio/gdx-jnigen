@@ -8,6 +8,9 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.clang.CXCursor;
+import org.bytedeco.llvm.clang.CXCursorVisitor;
+import org.bytedeco.llvm.clang.CXFile;
+import org.bytedeco.llvm.clang.CXDiagnostic;
 import org.bytedeco.llvm.clang.CXIndex;
 import org.bytedeco.llvm.clang.CXSourceLocation;
 import org.bytedeco.llvm.clang.CXSourceRange;
@@ -20,7 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -51,7 +57,7 @@ public class Generator {
         // We need to do this early, because numbers may be typedefed depending on the platform.
         // To properly resolve this, we need to generate the CTypeInfo for the "highest" declaration.
         if (!typeKind.isSpecial()) {
-            TypeDefinition typeDefinition = TypeDefinition.get(typeKind, name);
+            TypeDefinition typeDefinition = Manager.getInstance().defineType(typeKind, name, clang_Type_getSizeOf(type), clang_Type_getAlignOf(type));
             MappedType mappedType = new PrimitiveType(typeDefinition);
             typeDefinition.setOverrideMappedType(mappedType);
             return typeDefinition;
@@ -94,7 +100,7 @@ public class Generator {
                 // As the type system does not retain argument names, we need to reparse it here
                 patchClosureTypeWithCursor(lower, clang_getTypeDeclaration(type));
             }
-            TypeDefinition definition = TypeDefinition.get(lower.getTypeKind(), clang_getTypedefName(type).getString());
+            TypeDefinition definition = Manager.getInstance().defineType(lower.getTypeKind(), clang_getTypedefName(type).getString(), clang_Type_getSizeOf(type), clang_Type_getAlignOf(type));
             definition.setOverrideMappedType(lower.getMappedType());
             return definition;
         }
@@ -111,14 +117,14 @@ public class Generator {
 
         if (type.kind() == CXType_Pointer) {
             CXType pointee = clang_getPointeeType(type);
-            TypeDefinition typeDefinition = TypeDefinition.get(TypeKind.POINTER, name);
+            TypeDefinition typeDefinition = Manager.getInstance().defineType(TypeKind.POINTER, name, clang_Type_getSizeOf(type), clang_Type_getAlignOf(type));
 
             if (pointee.kind() == 0)
-                typeDefinition.setOverrideMappedType(new PointerType(TypeDefinition.get(TypeKind.VOID, "void")));
+                typeDefinition.setOverrideMappedType(new PointerType(Manager.getInstance().defineType(TypeKind.VOID, "void", clang_Type_getSizeOf(pointee), clang_Type_getAlignOf(pointee))));
 
             TypeDefinition nested = registerCXType(pointee, alternativeName, parent);
             if (TypeKind.getTypeKind(pointee) == TypeKind.CLOSURE) {
-                typeDefinition = TypeDefinition.get(TypeKind.CLOSURE, name);
+                typeDefinition = Manager.getInstance().defineType(TypeKind.CLOSURE, name, clang_Type_getSizeOf(type), clang_Type_getAlignOf(type));
                 typeDefinition.setOverrideMappedType(nested.getMappedType());
                 typeDefinition.setAnonymous(nested.isAnonymous());
             } else {
@@ -129,7 +135,7 @@ public class Generator {
         }
 
         if (type.kind() == CXType_IncompleteArray) {
-            TypeDefinition typeDefinition = TypeDefinition.get(TypeKind.POINTER, name.replace("[]", "*"));
+            TypeDefinition typeDefinition = Manager.getInstance().defineType(TypeKind.POINTER, name.replace("[]", "*"), clang_Type_getSizeOf(type), clang_Type_getAlignOf(type));
             TypeDefinition nested = registerCXType(clang_getArrayElementType(type), alternativeName, parent);
             typeDefinition.setOverrideMappedType(new PointerType(nested));
             typeDefinition.setNestedDefinition(nested);
@@ -137,7 +143,7 @@ public class Generator {
         }
 
         if (type.kind() == CXType_ConstantArray) {
-            TypeDefinition typeDefinition = TypeDefinition.get(TypeKind.FIXED_SIZE_ARRAY, name);
+            TypeDefinition typeDefinition = Manager.getInstance().defineType(TypeKind.FIXED_SIZE_ARRAY, name, clang_Type_getSizeOf(type), clang_Type_getAlignOf(type));
             typeDefinition.setCount((int)clang.clang_getArraySize(type));
             TypeDefinition nested = registerCXType(clang_getArrayElementType(type), alternativeName, parent);
             typeDefinition.setOverrideMappedType(new PointerType(nested));
@@ -156,7 +162,7 @@ public class Generator {
     }
 
     private static TypeDefinition registerStackElementType(CXType type, TypeKind typeKind, String name, String alternativeName, MappedType parent, boolean isSystemHeader) {
-        TypeDefinition typeDefinition = TypeDefinition.get(typeKind, name);
+        TypeDefinition typeDefinition = Manager.getInstance().defineType(typeKind, name, clang_Type_getSizeOf(type), clang_Type_getAlignOf(type));
         typeDefinition.setAnonymous(clang_Cursor_isAnonymous(clang.clang_getTypeDeclaration(type)) != 0);
         Manager.getInstance().registerCTypeMapping(name, typeDefinition);
         StackElementParser parser = new StackElementParser(typeDefinition, type, alternativeName, parent);
@@ -179,7 +185,7 @@ public class Generator {
     }
 
     private static TypeDefinition registerEnumType(CXType enumType, String name, String alternativeName, boolean forceAlternativeName) {
-        TypeDefinition typeDefinition = TypeDefinition.get(TypeKind.ENUM, name);
+        TypeDefinition typeDefinition = Manager.getInstance().defineType(TypeKind.ENUM, name, clang_Type_getSizeOf(enumType), clang_Type_getAlignOf(enumType));
         Manager.getInstance().registerCTypeMapping(name, typeDefinition);
         typeDefinition.setNestedDefinition(registerCXType(clang_getEnumDeclIntegerType(clang_getTypeDeclaration(enumType)), null, null));
         typeDefinition.setOverrideMappedType(new EnumParser(typeDefinition, enumType, alternativeName, forceAlternativeName).register());
@@ -201,7 +207,7 @@ public class Generator {
         DirectStubFunctionType directStub = new DirectStubFunctionType(functionSignature, parentMappedType, Manager.getInstance().getGlobalType());
         ClosureType closureType = new ClosureType(functionSignature, parentMappedType, directStub);
         Manager.getInstance().getGlobalType().addFunction(directStub);
-        TypeDefinition typeDefinition = TypeDefinition.get(TypeKind.CLOSURE, name);
+        TypeDefinition typeDefinition = Manager.getInstance().defineType(TypeKind.CLOSURE, name, clang_Type_getSizeOf(functionProto), clang_Type_getAlignOf(functionProto));
         typeDefinition.setOverrideMappedType(closureType);
         typeDefinition.setAnonymous(parent != null);
         if (!typeDefinition.isAnonymous()) {
@@ -297,21 +303,38 @@ public class Generator {
         return new FunctionSignature(functionName, argTypes, returnDefinition);
     }
 
-    public static void parse(String fileToParse, String[] options) {
+    public static void parse(String fileToParse, String[] options, String passName) {
         // What does 0,1 mean? Who knows!
         CXIndex index = clang_createIndex(0,1);
         BytePointer file = new BytePointer(createTempParsableFile(fileToParse).getAbsolutePath());
 
-        String[] includePaths = ClangUtils.getIncludePaths();
-        String[] parameter = new String[options.length + includePaths.length];
-        System.arraycopy(includePaths, 0, parameter, 0, includePaths.length);
-        System.arraycopy(options, 0, parameter, includePaths.length, options.length);
-
-        PointerPointer<BytePointer> argPointer = new PointerPointer<>(parameter);
-        CXTranslationUnit translationUnit = clang_parseTranslationUnit(index, file, argPointer, parameter.length, null, 0,
+        PointerPointer<BytePointer> argPointer = new PointerPointer<>(options);
+        CXTranslationUnit translationUnit = clang_parseTranslationUnit(index, file, argPointer, options.length, null, 0,
                 CXTranslationUnit_SkipFunctionBodies | CXTranslationUnit_DetailedPreprocessingRecord | CXTranslationUnit_IncludeAttributedTypes);
 
         try {
+            List<String> errors = new ArrayList<>();
+            int numDiagnostics = clang_getNumDiagnostics(translationUnit);
+            for (int i = 0; i < numDiagnostics; i++) {
+                CXDiagnostic diagnostic = clang_getDiagnostic(translationUnit, i);
+                try {
+                    if (clang_getDiagnosticSeverity(diagnostic) >= CXDiagnostic_Error)
+                        errors.add(clang_formatDiagnostic(diagnostic, clang_defaultDiagnosticDisplayOptions()).getString());
+                } finally {
+                    clang_disposeDiagnostic(diagnostic);
+                }
+            }
+            if (!errors.isEmpty()) {
+                for (String error : errors)
+                    System.err.println("Parsing " + fileToParse + " for " + passName + ": " + error);
+                argPointer.close();
+                file.close();
+                clang_disposeTranslationUnit(translationUnit);
+                clang_disposeIndex(index);
+                throw new IllegalStateException("Parsing " + fileToParse + " for " + passName + " failed with " + errors.size()
+                        + " error(s):\n" + String.join("\n", errors));
+            }
+
             ClangUtils.visitChildren(clang_getTranslationUnitCursor(translationUnit), (current, parent) -> {
                 CXSourceLocation location = clang_getCursorLocation(current);
                 if (clang_Location_isInSystemHeader(location) != 0)
@@ -330,7 +353,10 @@ public class Generator {
                         e.printStackTrace();
                     }
                 } else if (current.kind() == CXCursor_MacroDefinition) {
-                    if (clang_Cursor_isMacroBuiltin(current) == 0 && clang_Cursor_isMacroFunctionLike(current) == 0) {
+                    // Predefined macros live in the <built-in> and <command line> pseudo files, which are not system headers
+                    CXFile macroFile = new CXFile();
+                    clang_getExpansionLocation(location, macroFile, (IntPointer) null, null, null);
+                    if (!macroFile.isNull() && clang_Cursor_isMacroBuiltin(current) == 0 && clang_Cursor_isMacroFunctionLike(current) == 0) {
                         CXSourceRange range = clang_getCursorExtent(current);
                         CXToken tokens = new CXToken(null);
                         IntPointer nTokens = new IntPointer(1);
@@ -361,30 +387,31 @@ public class Generator {
         Manager.getInstance().emit(path);
     }
 
-    public static void execute(String path, String basePackage, String fileToParse, String[] options) {
+    public static void execute(String path, String basePackage, String fileToParse, Path sysroot, String[] options) {
         if (!path.endsWith("/"))
             path += "/";
-        String[] extendedOptions = Arrays.copyOf(options, options.length + 2);
-        extendedOptions[extendedOptions.length - 2] = "-m32";
-        extendedOptions[extendedOptions.length - 1] = "-funsigned-char";
-        Manager.init(fileToParse, basePackage);
-        parse(fileToParse, extendedOptions);
+        if (!Files.isDirectory(sysroot.resolve("include")) || !Files.isDirectory(sysroot.resolve("libc").resolve("include")))
+            throw new IllegalArgumentException("Sysroot " + sysroot + " must contain include/ and libc/include/ (Zig's lib directory)");
 
-        Manager unsignedCharManager = Manager.getInstance();
+        List<Manager> passes = new ArrayList<>();
+        for (ParseTarget target : ParseTarget.values()) {
+            String[] targetArguments = target.clangArguments(sysroot);
+            String[] arguments = Arrays.copyOf(targetArguments, targetArguments.length + options.length);
+            System.arraycopy(options, 0, arguments, targetArguments.length, options.length);
+            Manager.init(target, fileToParse, basePackage);
+            parse(fileToParse, arguments, target.name());
+            passes.add(Manager.getInstance());
+        }
 
-        extendedOptions = Arrays.copyOf(options, options.length + 1);
-        extendedOptions[extendedOptions.length - 1] = "-fsigned-char";
-        Manager.init(fileToParse, basePackage);
-        parse(fileToParse, extendedOptions);
-
-        Manager.getInstance().mergeManager(unsignedCharManager);
-
+        Manager.getInstance().unifyWith(passes);
         generateJavaCode(path);
     }
 
     public static void main(String[] args) {
-        String[] options = new String[args.length - 3];
-        System.arraycopy(args, 3, options, 0, options.length);
-        execute(args[0], args[1], args[2], options);
+        if (args.length < 4)
+            throw new IllegalArgumentException("Usage: <outputPath> <basePackage> <fileToParse> <sysrootDir> [clang options...]");
+        String[] options = new String[args.length - 4];
+        System.arraycopy(args, 4, options, 0, options.length);
+        execute(args[0], args[1], args[2], Paths.get(args[3]), options);
     }
 }

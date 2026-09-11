@@ -398,6 +398,74 @@ public final class BufferPtr {
         }
     }
 
+    public long getNativeWord() {
+        assertBounds(CHandler.POINTER_SIZE);
+        if (CHandler.POINTER_SIZE == 4)
+            return buffer.getInt(offset);
+        else
+            return buffer.getLong(offset);
+    }
+
+    public long getNativeWord(int index) {
+        assertBounds(index + CHandler.POINTER_SIZE);
+        if (CHandler.POINTER_SIZE == 4) {
+            return buffer.getInt(offset + index);
+        } else {
+            return buffer.getLong(offset + index);
+        }
+    }
+
+    public void setNativeWord(long value) {
+        assertBounds(CHandler.POINTER_SIZE);
+        if (CHandler.POINTER_SIZE == 4)
+            buffer.putInt(offset, (int)value);
+        else
+            buffer.putLong(offset, value);
+    }
+
+    public void setNativeWord(int index, long value) {
+        assertBounds(index + CHandler.POINTER_SIZE);
+        if (CHandler.POINTER_SIZE == 4) {
+            buffer.putInt(offset + index, (int)value);
+        } else {
+            buffer.putLong(offset + index, value);
+        }
+    }
+
+    public long getNativeUWord() {
+        assertBounds(CHandler.POINTER_SIZE);
+        if (CHandler.POINTER_SIZE == 4)
+            return buffer.getInt(offset) & 0xFFFFFFFFL;
+        else
+            return buffer.getLong(offset);
+    }
+
+    public long getNativeUWord(int index) {
+        assertBounds(index + CHandler.POINTER_SIZE);
+        if (CHandler.POINTER_SIZE == 4) {
+            return buffer.getInt(offset + index) & 0xFFFFFFFFL;
+        } else {
+            return buffer.getLong(offset + index);
+        }
+    }
+
+    public void setNativeUWord(long value) {
+        assertBounds(CHandler.POINTER_SIZE);
+        if (CHandler.POINTER_SIZE == 4)
+            buffer.putInt(offset, (int)value);
+        else
+            buffer.putLong(offset, value);
+    }
+
+    public void setNativeUWord(int index, long value) {
+        assertBounds(index + CHandler.POINTER_SIZE);
+        if (CHandler.POINTER_SIZE == 4) {
+            buffer.putInt(offset + index, (int)value);
+        } else {
+            buffer.putLong(offset + index, value);
+        }
+    }
+
     public String getString()
     {
         return getString(StandardCharsets.UTF_8);

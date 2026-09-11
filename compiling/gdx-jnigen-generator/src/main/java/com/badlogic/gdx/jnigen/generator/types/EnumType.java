@@ -27,6 +27,8 @@ import com.github.javaparser.ast.stmt.SwitchStmt;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.stream.Collectors;
+import java.util.List;
 
 public class EnumType implements MappedType {
 
@@ -172,6 +174,10 @@ public class EnumType implements MappedType {
                 .addParameter(int.class, "index")
                 .createBody()
                 .addStatement(writeExpr);
+    }
+
+    public List<EnumConstant> getConstants() {
+        return constants.values().stream().sorted(Comparator.comparingInt(EnumConstant::getId)).collect(Collectors.toList());
     }
 
     public PrimitiveType getBackingPrimitiveType() {

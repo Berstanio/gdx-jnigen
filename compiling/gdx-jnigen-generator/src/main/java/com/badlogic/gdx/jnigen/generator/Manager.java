@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Manager {
@@ -37,9 +38,10 @@ public class Manager {
 
     private final String parsedCHeader;
     private final String basePackage;
+    private final ParseTarget target;
 
-    public static void init(String parsedCHeader, String basePackage) {
-        instance = new Manager(parsedCHeader, basePackage);
+    public static void init(ParseTarget target, String parsedCHeader, String basePackage) {
+        instance = new Manager(target, parsedCHeader, basePackage);
     }
 
     private final Map<String, StackElementType> stackElements = new HashMap<>();
@@ -55,8 +57,9 @@ public class Manager {
 
     private final GlobalType globalType;
 
-    public Manager(String parsedCHeader, String basePackage) {
+    public Manager(ParseTarget target, String parsedCHeader, String basePackage) {
         this.rollBackManager = null;
+        this.target = target;
         this.parsedCHeader = parsedCHeader;
         this.basePackage = basePackage;
         String[] segments = parsedCHeader.split("/");
@@ -65,6 +68,7 @@ public class Manager {
 
     public Manager(Manager rollBackManager) {
         this.rollBackManager = rollBackManager;
+        this.target = rollBackManager.target;
         this.parsedCHeader = rollBackManager.parsedCHeader;
         this.basePackage = rollBackManager.basePackage;
         this.stackElements.putAll(rollBackManager.stackElements);
@@ -87,22 +91,35 @@ public class Manager {
         instance = instance.rollBackManager;
     }
 
-    public void mergeManager(Manager toMerge) {
-        toMerge.knownCTypes.forEach((name, typeDefinition) -> {
-            TypeDefinition own = knownCTypes.get(name);
-            if (own == null)
-                throw new IllegalStateException("Can't merge Manager cause " + name + " doesn't exist in both.");
-            if (own.getTypeKind() != typeDefinition.getTypeKind()) {
-                if (own.getTypeKind() == TypeKind.SIGNED_BYTE && typeDefinition.getTypeKind() == TypeKind.PROMOTED_BYTE)
-                    own.setTypeKind(TypeKind.NATIVE_BYTE);
-                else if (own.getTypeKind() == TypeKind.PROMOTED_LONG && typeDefinition.getTypeKind() == TypeKind.PROMOTED_LONG_LONG)
-                    own.setTypeKind(TypeKind.PROMOTED_LONG_LONG);
-                else if (own.getTypeKind() == TypeKind.LONG && typeDefinition.getTypeKind() == TypeKind.LONG_LONG)
-                    own.setTypeKind(TypeKind.LONG_LONG);
-                else
-                    throw new IllegalStateException("Can't merge " + typeDefinition.getTypeKind() + " into " + own.getTypeKind());
-            }
+    public void unifyWith(List<Manager> passes) {
+        passes.forEach(this::checkSameDeclarations);
+
+        knownCTypes.forEach((name, own) -> {
+            List<TypeDefinition> seenPerPass = new ArrayList<>();
+            for (Manager pass : passes)
+                seenPerPass.add(pass.knownCTypes.get(name));
+            own.setTypeKind(TypeKind.resolve(name, seenPerPass));
         });
+    }
+
+    public void checkSameDeclarations(Manager manager) {
+        DeclarationCheck.checkSame(this, manager);
+    }
+
+    public Set<String> getCTypeNames() {
+        return knownCTypes.keySet();
+    }
+
+    public List<StackElementType> getStackElements() {
+        return orderedStackElements;
+    }
+
+    public Map<String, EnumType> getEnums() {
+        return enums;
+    }
+
+    public Map<String, MacroType> getMacros() {
+        return macros;
     }
 
     public void addStackElement(StackElementType stackElementType, boolean registerGlobally) {
@@ -127,10 +144,23 @@ public class Manager {
         enums.put(name, enumType);
     }
 
-    public void recordCType(String name, TypeDefinition definition) {
-        if (hasCType(name))
-            throw new IllegalArgumentException("CType with name: " + name + " already exists");
-        knownCTypes.put(name, definition);
+    public TypeDefinition defineType(TypeKind typeKind, String typeName, long observedSize, long observedAlignment) {
+        if (!typeKind.isPrimitive())
+            return new TypeDefinition(typeKind, typeName, target.getPossibleTarget(), observedSize, observedAlignment);
+
+        TypeDefinition definition = knownCTypes.get(typeName);
+        if (definition == null) {
+            definition = new TypeDefinition(typeKind, typeName, target.getPossibleTarget(), observedSize, observedAlignment);
+            knownCTypes.put(typeName, definition);
+            return definition;
+        }
+        if (definition.getTypeKind() != typeKind)
+            throw new IllegalArgumentException("Type " + typeName + " has kind " + definition.getTypeKind() + ", but requested was " + typeKind);
+        if (definition.getObservedSize() != observedSize)
+            throw new IllegalArgumentException("Type " + typeName + " has size " + definition.getObservedSize() + ", but requested was " + observedSize);
+        if (definition.getObservedAlignment() != observedAlignment)
+            throw new IllegalArgumentException("Type " + typeName + " has alignment " + definition.getObservedAlignment() + ", but requested was " + observedAlignment);
+        return definition;
     }
 
     public boolean hasCType(String name) {
@@ -202,6 +232,10 @@ public class Manager {
 
     public GlobalType getGlobalType() {
         return globalType;
+    }
+
+    public ParseTarget getTarget() {
+        return target;
     }
 
     public String getParsedCHeader() {

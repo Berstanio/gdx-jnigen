@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stddef.h>
+#ifdef _MSC_VER
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#else
+#include <sys/types.h>
+#endif
 #include <test_system_types.h>
 
 #define RANDOM_MACRO 5
@@ -400,6 +407,50 @@ methodWithCallbackCallThrowingCallback getCallThrowingCallbackCallback(void);
 
 methodWithCallback getNoopVoidCallback(void);
 methodWithCallbackIntArg getNoopIntArgCallback(void);
+
+// Word-sized integers: size_t & co. are 4 bytes on 32-bit and 8 bytes on 64-bit targets, including
+// Windows x64 where long stays 4 bytes. They resolve to different builtin kinds in the 32-bit and
+// 64-bit parse passes (unsigned int vs unsigned long / unsigned long long), which the generator must
+// merge into its word kinds.
+typedef size_t my_size_t;
+
+// A library-style conditional word typedef. Only a parse with a Windows target can tell that it is
+// 8 bytes on Win64 (where unsigned long would be 4), so this pins the multi-target generator.
+#if defined(_WIN64)
+typedef unsigned long long conditional_word_t;
+#elif defined(__LP64__) || defined(_LP64)
+typedef unsigned long conditional_word_t;
+#else
+typedef unsigned int conditional_word_t;
+#endif
+conditional_word_t passConditionalWord(conditional_word_t v);
+conditional_word_t sumConditionalWords(const conditional_word_t* values, size_t count);
+
+typedef struct WordStruct {
+    uint8_t tag; // pads the following word to offset 4 (32-bit) / 8 (64-bit)
+    size_t count;
+    ssize_t delta;
+    intptr_t address;
+    my_size_t aliased;
+} WordStruct;
+
+size_t passSizeT(size_t v);
+size_t maxSizeT(void);
+ssize_t negateSSizeT(ssize_t v);
+intptr_t passIntPtrT(intptr_t v);
+uintptr_t passUIntPtrT(uintptr_t v);
+ptrdiff_t passPtrDiffT(ptrdiff_t v);
+my_size_t passMySizeT(my_size_t v);
+size_t sumSizeTArray(const size_t* values, size_t count);
+void fillSizeTArray(size_t* out, size_t count);
+ssize_t sumSSizeTArray(ssize_t* values, size_t count);
+size_t wordStructSize(void);
+void fillWordStruct(WordStruct* s);
+size_t readWordStructCount(WordStruct* s);
+ssize_t readWordStructDelta(WordStruct* s);
+
+typedef size_t (*methodWithCallbackSizeT)(size_t in, ssize_t neg);
+size_t call_methodWithCallbackSizeT(methodWithCallbackSizeT fnPtr, size_t in, ssize_t neg);
 
 #ifdef __cplusplus
 }

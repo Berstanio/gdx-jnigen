@@ -92,8 +92,8 @@ public class CursorVisitorSlotTest {
                 + "void use(Holder h);\n").getBytes());
         try {
             for (int run = 0; run < JAVACPP_CALLBACK_SLOTS + 2; run++) {
-                Manager.init(header.toString(), "com.example");
-                Generator.parse(header.toString(), new String[0]);
+                Manager.init(ParseTarget.LINUX_X86_64, header.toString(), "com.example");
+                Generator.parse(header.toString(), new String[0], ParseTarget.LINUX_X86_64.name());
             }
         } finally {
             Files.deleteIfExists(header);

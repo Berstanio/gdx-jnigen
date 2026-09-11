@@ -25,10 +25,10 @@ JNIEXPORT jboolean JNICALL Java_com_badlogic_gdx_jnigen_runtime_CHandler_isCompi
 
 /*
  * Class:     com_badlogic_gdx_jnigen_runtime_CHandler
- * Method:    isCompiledAndroidX86
+ * Method:    isCompiledUnixI386
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_com_badlogic_gdx_jnigen_runtime_CHandler_isCompiledAndroidX86
+JNIEXPORT jboolean JNICALL Java_com_badlogic_gdx_jnigen_runtime_CHandler_isCompiledUnixI386
   (JNIEnv *, jclass);
 
 /*
