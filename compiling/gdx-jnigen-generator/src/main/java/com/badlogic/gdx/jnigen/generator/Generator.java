@@ -302,8 +302,9 @@ public class Generator {
             if (cursor != null) {
                 CXCursor paramCursor = clang_Cursor_getArgument(cursor, i);
                 String potentialName = clang_getCursorSpelling(paramCursor).getString();
-                if (!potentialName.isEmpty())
-                    name = potentialName;
+                if (!potentialName.isEmpty()) {
+                    name = JavaUtils.deduplicateArgumentName(potentialName);
+                }
             }
             TypeDefinition argTypeDefinition = registerCXType(argType, name, null);
 
