@@ -7,10 +7,7 @@ import com.badlogic.gdx.jnigen.generator.types.*;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.PointerPointer;
-import org.bytedeco.javacpp.annotation.ByVal;
-import org.bytedeco.llvm.clang.CXClientData;
 import org.bytedeco.llvm.clang.CXCursor;
-import org.bytedeco.llvm.clang.CXCursorVisitor;
 import org.bytedeco.llvm.clang.CXIndex;
 import org.bytedeco.llvm.clang.CXSourceLocation;
 import org.bytedeco.llvm.clang.CXSourceRange;
@@ -243,24 +240,18 @@ public class Generator {
     // Clangs typesystem doesn't retain arg names, so we need to reparse them for closures
     public static void patchSignatureArgNamesWithVisitor(FunctionSignature functionSignature, CXCursor cursor) {
         AtomicInteger counter = new AtomicInteger(0);
-        CXCursorVisitor parameterVisitor = new CXCursorVisitor() {
-            @Override
-            public int call(CXCursor current, CXCursor parent, CXClientData client_data) {
-                if (current.kind() == CXCursor_ParmDecl) {
-                    int id = counter.getAndIncrement();
+        ClangUtils.visitChildren(cursor, (current, parent) -> {
+            if (current.kind() == CXCursor_ParmDecl) {
+                int id = counter.getAndIncrement();
 
-                    String name = clang_getCursorSpelling(current).getString();
-                    if (name.isEmpty())
-                        name = "arg" + id;
+                String name = clang_getCursorSpelling(current).getString();
+                if (name.isEmpty())
+                    name = "arg" + id;
 
-                    functionSignature.getArguments()[id].setName(name);
-                }
-                return CXChildVisit_Recurse;
+                functionSignature.getArguments()[id].setName(name);
             }
-        };
-
-        clang_visitChildren(cursor, parameterVisitor, null);
-        parameterVisitor.close();
+            return CXChildVisit_Recurse;
+        });
     }
 
     public static void dumpAST(CXCursor cursor, int depth) {
@@ -271,17 +262,10 @@ public class Generator {
                 clang_getTypeSpelling(clang_getCursorType(cursor)).getString(),
                 clang_getCursorKind(cursor));
 
-        CXCursorVisitor visitor = new CXCursorVisitor() {
-            @Override
-            public int call(CXCursor cursor, CXCursor parent, CXClientData client_data) {
-                dumpAST(cursor, depth + 1);
-                return CXChildVisit_Continue;
-            }
-        };
-
-        clang_visitChildren(cursor, visitor, null);
-
-        visitor.close();
+        ClangUtils.visitChildren(cursor, (child, parent) -> {
+            dumpAST(child, depth + 1);
+            return CXChildVisit_Continue;
+        });
     }
 
     public static FunctionSignature parseFunctionSignature(String functionName, CXType functionType, CXCursor cursor) {
@@ -327,9 +311,8 @@ public class Generator {
         CXTranslationUnit translationUnit = clang_parseTranslationUnit(index, file, argPointer, parameter.length, null, 0,
                 CXTranslationUnit_SkipFunctionBodies | CXTranslationUnit_DetailedPreprocessingRecord | CXTranslationUnit_IncludeAttributedTypes);
 
-        CXCursorVisitor visitor = new CXCursorVisitor() {
-            @Override
-            public int call(@ByVal CXCursor current, @ByVal CXCursor parent, CXClientData cxClientData) {
+        try {
+            ClangUtils.visitChildren(clang_getTranslationUnitCursor(translationUnit), (current, parent) -> {
                 CXSourceLocation location = clang_getCursorLocation(current);
                 if (clang_Location_isInSystemHeader(location) != 0)
                     return CXChildVisit_Continue;
@@ -365,14 +348,13 @@ public class Generator {
                 }
 
                 return CXChildVisit_Recurse;
-            }
-        };
-
-        clang_visitChildren(clang_getTranslationUnitCursor(translationUnit), visitor, null);
-        argPointer.close();
-        file.close();
-        clang_disposeTranslationUnit(translationUnit);
-        clang_disposeIndex(index);
+            });
+        } finally {
+            argPointer.close();
+            file.close();
+            clang_disposeTranslationUnit(translationUnit);
+            clang_disposeIndex(index);
+        }
     }
 
     public static void generateJavaCode(String path) {
