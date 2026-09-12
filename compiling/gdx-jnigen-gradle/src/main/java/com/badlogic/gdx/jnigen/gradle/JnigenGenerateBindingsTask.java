@@ -1,6 +1,9 @@
 package com.badlogic.gdx.jnigen.gradle;
 
+import com.badlogic.gdx.jnigen.BuildTarget;
+import com.badlogic.gdx.jnigen.generator.ParseTarget;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -10,6 +13,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Classpath;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.Sync;
 import org.gradle.api.tasks.TaskAction;
@@ -19,6 +23,8 @@ import javax.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -32,12 +38,14 @@ public class JnigenGenerateBindingsTask extends DefaultTask {
     private static final String ZIG_LIB_PREFIX = ZIG_MODULE + "-" + ZIG_VERSION + "/lib/";
 
     private final JnigenBindingGeneratorExtension generator;
+    private final List<BuildTarget> buildTargets;
     private final Configuration configuration;
     private final Provider<Directory> sysrootDir;
 
     @Inject
-    public JnigenGenerateBindingsTask(JnigenBindingGeneratorExtension generator) {
+    public JnigenGenerateBindingsTask(JnigenBindingGeneratorExtension generator, List<BuildTarget> buildTargets) {
         this.generator = generator;
+        this.buildTargets = buildTargets;
 
         setGroup("jnigen");
 
@@ -105,6 +113,19 @@ public class JnigenGenerateBindingsTask extends DefaultTask {
         return sysrootDir;
     }
 
+    @Input
+    public List<ParseTarget> getParseTargets() {
+        EnumSet<ParseTarget> targets = EnumSet.noneOf(ParseTarget.class);
+        for (BuildTarget target : buildTargets) {
+            ParseTarget parseTarget = ParseTarget.of(target.os, target.architecture, target.bitness, target.getTargetAndroidABI());
+            if (parseTarget == null)
+                throw new IllegalArgumentException("No parse target for native build target " + target);
+
+            targets.add(parseTarget);
+        }
+        return new ArrayList<>(targets);
+    }
+
     @TaskAction
     public void run() {
         Objects.requireNonNull(generator.getOutputPath(), "jnigen.generator.outputPath not defined");
@@ -124,11 +145,16 @@ public class JnigenGenerateBindingsTask extends DefaultTask {
         if (options == null)
             options = new String[0];
 
+        List<ParseTarget> targets = getParseTargets();
+        if (targets == null || targets.isEmpty())
+            throw new GradleException("No native build targets configured");
+
         ArrayList<String> args = new ArrayList<>();
         args.add(generator.getOutputPath().getAbsolutePath());
         args.add(generator.getBasePackage());
         args.add(generator.getFileToParse());
         args.add(sysrootDir.get().getAsFile().getAbsolutePath());
+        args.add(targets.stream().map(ParseTarget::name).collect(Collectors.joining(",")));
         args.addAll(Arrays.asList(options));
 
         getProject().javaexec(spec -> {

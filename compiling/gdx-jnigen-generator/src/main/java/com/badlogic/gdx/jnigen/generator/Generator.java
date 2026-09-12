@@ -387,14 +387,14 @@ public class Generator {
         Manager.getInstance().emit(path);
     }
 
-    public static void execute(String path, String basePackage, String fileToParse, Path sysroot, String[] options) {
+    public static void execute(String path, String basePackage, String fileToParse, Path sysroot, List<ParseTarget> targets, String[] options) {
         if (!path.endsWith("/"))
             path += "/";
         if (!Files.isDirectory(sysroot.resolve("include")) || !Files.isDirectory(sysroot.resolve("libc").resolve("include")))
             throw new IllegalArgumentException("Sysroot " + sysroot + " must contain include/ and libc/include/ (Zig's lib directory)");
 
         List<Manager> passes = new ArrayList<>();
-        for (ParseTarget target : ParseTarget.values()) {
+        for (ParseTarget target : targets) {
             String[] targetArguments = target.clangArguments(sysroot);
             String[] arguments = Arrays.copyOf(targetArguments, targetArguments.length + options.length);
             System.arraycopy(options, 0, arguments, targetArguments.length, options.length);
@@ -408,10 +408,10 @@ public class Generator {
     }
 
     public static void main(String[] args) {
-        if (args.length < 4)
-            throw new IllegalArgumentException("Usage: <outputPath> <basePackage> <fileToParse> <sysrootDir> [clang options...]");
-        String[] options = new String[args.length - 4];
-        System.arraycopy(args, 4, options, 0, options.length);
-        execute(args[0], args[1], args[2], Paths.get(args[3]), options);
+        if (args.length < 5)
+            throw new IllegalArgumentException("Usage: <outputPath> <basePackage> <fileToParse> <sysrootDir> <parseTarget,...> [clang options...]");
+        String[] options = new String[args.length - 5];
+        System.arraycopy(args, 5, options, 0, options.length);
+        execute(args[0], args[1], args[2], Paths.get(args[3]), ParseTarget.parse(args[4]), options);
     }
 }

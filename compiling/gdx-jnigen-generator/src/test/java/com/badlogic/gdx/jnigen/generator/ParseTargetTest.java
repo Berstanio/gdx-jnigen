@@ -1,5 +1,9 @@
 package com.badlogic.gdx.jnigen.generator;
 
+import com.badlogic.gdx.jnigen.commons.AndroidABI;
+import com.badlogic.gdx.jnigen.commons.Architecture;
+import com.badlogic.gdx.jnigen.commons.Architecture.Bitness;
+import com.badlogic.gdx.jnigen.commons.Os;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -47,6 +51,13 @@ public class ParseTargetTest {
         assertEquals("/sysroot/libc/include/aarch64-linux-any", args(ParseTarget.LINUX_AARCH64)[9]);
         assertEquals("--target=arm-unknown-linux-gnueabihf", args(ParseTarget.LINUX_ARM)[0]);
         assertEquals("/sysroot/libc/include/arm-linux-gnu", args(ParseTarget.LINUX_ARM)[5]);
+        // Zig keeps one glibc header set per architecture family, riscv and loongarch included.
+        assertEquals("--target=riscv64-unknown-linux-gnu", args(ParseTarget.LINUX_RISCV64)[0]);
+        assertEquals("/sysroot/libc/include/riscv-linux-gnu", args(ParseTarget.LINUX_RISCV64)[5]);
+        assertEquals("/sysroot/libc/include/riscv-linux-any", args(ParseTarget.LINUX_RISCV64)[9]);
+        assertEquals("--target=loongarch64-unknown-linux-gnu", args(ParseTarget.LINUX_LOONGARCH64)[0]);
+        assertEquals("/sysroot/libc/include/loongarch-linux-gnu", args(ParseTarget.LINUX_LOONGARCH64)[5]);
+        assertEquals("/sysroot/libc/include/loongarch-linux-any", args(ParseTarget.LINUX_LOONGARCH64)[9]);
     }
 
     @Test
@@ -64,6 +75,11 @@ public class ParseTargetTest {
                 "-isystem", "/sysroot/include",
                 "-isystem", "/sysroot/libc/include/any-darwin-any"}, args(ParseTarget.MACOS_AARCH64));
         assertEquals("--target=x86_64-apple-macos", args(ParseTarget.MACOS_X86_64)[0]);
+        // mingw-w64 headers are architecture independent, so Windows on ARM64 shares them.
+        assertArrayEquals(new String[] {
+                "--target=aarch64-w64-mingw32", "-nostdinc",
+                "-isystem", "/sysroot/include",
+                "-isystem", "/sysroot/libc/include/any-windows-any"}, args(ParseTarget.WINDOWS_AARCH64));
     }
 
     @Test
@@ -77,6 +93,59 @@ public class ParseTargetTest {
         assertEquals(PossibleTarget.UNIX_32_NOT_X86, ParseTarget.LINUX_ARM.getPossibleTarget());
         assertEquals(PossibleTarget.WIN_64, ParseTarget.WINDOWS_X86_64.getPossibleTarget());
         assertEquals(PossibleTarget.WIN_32, ParseTarget.WINDOWS_X86.getPossibleTarget());
+        assertEquals(PossibleTarget.WIN_64, ParseTarget.WINDOWS_AARCH64.getPossibleTarget());
+        assertEquals(PossibleTarget.UNIX_64, ParseTarget.LINUX_RISCV64.getPossibleTarget());
+        assertEquals(PossibleTarget.UNIX_64, ParseTarget.LINUX_LOONGARCH64.getPossibleTarget());
+    }
+
+    @Test
+    void parsesTheCommaSeparatedNamesThePluginPasses() {
+        assertEquals(Arrays.asList(ParseTarget.LINUX_X86_64, ParseTarget.WINDOWS_X86),
+                ParseTarget.parse("LINUX_X86_64,WINDOWS_X86"));
+        // Several native targets can map onto one pass (Android x86_64 and Linux x86_64, say); it still runs once.
+        assertEquals(Arrays.asList(ParseTarget.LINUX_X86_64, ParseTarget.WINDOWS_X86_64),
+                ParseTarget.parse("WINDOWS_X86_64,LINUX_X86_64,WINDOWS_X86_64"));
+    }
+
+    @Test
+    void desktopBuildTargetsMapByOsArchitectureAndBitness() {
+        assertEquals(ParseTarget.LINUX_X86_64, ParseTarget.of(Os.Linux, Architecture.x86, Bitness._64, null));
+        assertEquals(ParseTarget.LINUX_X86, ParseTarget.of(Os.Linux, Architecture.x86, Bitness._32, null));
+        assertEquals(ParseTarget.LINUX_AARCH64, ParseTarget.of(Os.Linux, Architecture.ARM, Bitness._64, null));
+        assertEquals(ParseTarget.LINUX_ARM, ParseTarget.of(Os.Linux, Architecture.ARM, Bitness._32, null));
+        assertEquals(ParseTarget.LINUX_RISCV64, ParseTarget.of(Os.Linux, Architecture.RISCV, Bitness._64, null));
+        assertEquals(ParseTarget.LINUX_LOONGARCH64, ParseTarget.of(Os.Linux, Architecture.LOONGARCH, Bitness._64, null));
+        assertEquals(ParseTarget.WINDOWS_X86_64, ParseTarget.of(Os.Windows, Architecture.x86, Bitness._64, null));
+        assertEquals(ParseTarget.WINDOWS_X86, ParseTarget.of(Os.Windows, Architecture.x86, Bitness._32, null));
+        assertEquals(ParseTarget.WINDOWS_AARCH64, ParseTarget.of(Os.Windows, Architecture.ARM, Bitness._64, null));
+        assertEquals(ParseTarget.MACOS_X86_64, ParseTarget.of(Os.MacOsX, Architecture.x86, Bitness._64, null));
+        assertEquals(ParseTarget.MACOS_AARCH64, ParseTarget.of(Os.MacOsX, Architecture.ARM, Bitness._64, null));
+    }
+
+    @Test
+    void androidAbisMapToTheGlibcPassOfTheSameArchitecture() {
+        // Zig ships no bionic headers; bionic follows the same ABI as glibc on every ABI Android supports.
+        // Android build targets carry a meaningless 32-bit x86 architecture, only the ABI counts.
+        assertEquals(ParseTarget.LINUX_ARM, ParseTarget.of(Os.Android, Architecture.x86, Bitness._32, AndroidABI.ABI_ARMEABI_V7A));
+        assertEquals(ParseTarget.LINUX_AARCH64, ParseTarget.of(Os.Android, Architecture.x86, Bitness._32, AndroidABI.ABI_ARM64_V8A));
+        assertEquals(ParseTarget.LINUX_X86, ParseTarget.of(Os.Android, Architecture.x86, Bitness._32, AndroidABI.ABI_x86));
+        assertEquals(ParseTarget.LINUX_X86_64, ParseTarget.of(Os.Android, Architecture.x86, Bitness._32, AndroidABI.ABI_x86_64));
+    }
+
+    @Test
+    void iosMapsToTheMacosPassOfTheSameArchitecture() {
+        // Zig's Darwin headers are shared by macOS and iOS; device and simulator only differ in the SDK.
+        assertEquals(ParseTarget.MACOS_AARCH64, ParseTarget.of(Os.IOS, Architecture.ARM, Bitness._64, null));
+        assertEquals(ParseTarget.MACOS_X86_64, ParseTarget.of(Os.IOS, Architecture.x86, Bitness._64, null));
+    }
+
+    @Test
+    void buildTargetsWithoutHeadersAreRejectedByName() {
+        // jnigen can build these, but Zig has no glibc for rv32 and there is no mingw pass for Windows on ARM32.
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> ParseTarget.of(Os.Windows, Architecture.ARM, Bitness._32, null));
+        assertTrue(e.getMessage().contains("Windows Arm 32"), e.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> ParseTarget.of(Os.Linux, Architecture.RISCV, Bitness._32, null));
     }
 
     @Test
@@ -84,7 +153,7 @@ public class ParseTargetTest {
         // The first enum constant is the pass whose model (structs, functions, enums) is emitted;
         // the other passes only contribute integer-kind observations.
         assertEquals(ParseTarget.LINUX_X86_64, ParseTarget.values()[0]);
-        assertEquals(8, ParseTarget.values().length);
-        assertEquals(8, Arrays.stream(ParseTarget.values()).map(ParseTarget::getTriple).distinct().count());
+        assertEquals(11, ParseTarget.values().length);
+        assertEquals(11, Arrays.stream(ParseTarget.values()).map(ParseTarget::getTriple).distinct().count());
     }
 }
