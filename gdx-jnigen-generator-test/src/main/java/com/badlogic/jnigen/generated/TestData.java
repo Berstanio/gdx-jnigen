@@ -1,5 +1,6 @@
 package com.badlogic.jnigen.generated;
 
+import com.badlogic.gdx.jnigen.runtime.CHandler;
 import com.badlogic.gdx.jnigen.runtime.c.CXXException;
 import com.badlogic.jnigen.generated.structs.GlobalArg;
 import com.badlogic.jnigen.generated.structs.forwardDeclStruct;
@@ -18,7 +19,6 @@ import com.badlogic.jnigen.generated.structs.FILE;
 import com.badlogic.jnigen.generated.structs.timespec;
 import com.badlogic.jnigen.generated.structs.TimeHolder;
 import com.badlogic.gdx.jnigen.runtime.closure.ClosureObject;
-import com.badlogic.gdx.jnigen.runtime.CHandler;
 import com.badlogic.jnigen.generated.TestData;
 import com.badlogic.jnigen.generated.TestData_Internal;
 import com.badlogic.jnigen.generated.enums.public_color;
